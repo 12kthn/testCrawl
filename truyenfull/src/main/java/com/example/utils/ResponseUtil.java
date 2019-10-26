@@ -7,13 +7,10 @@ import com.example.model.Author;
 import com.example.model.Category;
 import com.example.model.Chapter;
 import com.example.model.Comic;
-import com.example.model.Tag;
 import com.example.model.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
-import com.example.utils.TimeUtil;
 
 public class ResponseUtil {
 	private static ObjectMapper mapper = new ObjectMapper();
@@ -102,28 +99,6 @@ public class ResponseUtil {
         return node;
     }
     
-    public static ObjectNode returnTag(Tag tag) {
-        ObjectNode node = mapper.createObjectNode();
-        node.put("id", tag.getId());
-        node.put("name", tag.getName());
-        List<String> comicTitles = new ArrayList<>();
-        for (Comic comic: tag.getComics()) {
-        	comicTitles.add(comic.getTitle());
-        }
-        node.put("tags", comicTitles.toString());
-        node.put("createAt", TimeUtil.toString(tag.getCreateAt()));
-		node.put("updateAt", TimeUtil.toString(tag.getUpdateAt()));
-        return node;
-    }
-    
-    public static ArrayNode returnListTag(List<Tag> tags) {
-        ArrayNode node = mapper.createArrayNode();
-        for (Tag tag : tags) {
-            node.add(returnTag(tag));
-        }
-        return node;
-    }
-    
     public static ObjectNode returnComic(Comic comic) {
         ObjectNode node = mapper.createObjectNode();
         node.put("id", comic.getId());
@@ -136,14 +111,6 @@ public class ResponseUtil {
         	categoryTitles.add(category.getName());
         }
         node.put("categorys", categoryTitles.toString());
-        
-        if (comic.getTags() != null) {
-        	List<String> tagNames = new ArrayList<>();
-            for (Tag tag: comic.getTags()) {
-            	tagNames.add(tag.getName());
-            }
-            node.put("tags", tagNames.toString());
-		}
         
         if (comic.getAuthors() != null) {
 	        List<String> authorNames = new ArrayList<>();

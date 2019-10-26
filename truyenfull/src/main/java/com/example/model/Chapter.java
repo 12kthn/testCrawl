@@ -30,6 +30,7 @@ public class Chapter {
 	
 	private String title;
 	
+	@Column(length = 65535, columnDefinition = "text")
 	private String content;
 	
 	@ManyToOne(fetch = FetchType.LAZY)

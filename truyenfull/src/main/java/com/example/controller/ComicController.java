@@ -106,9 +106,8 @@ public class ComicController {
 		comic.setDescription(comicDetail.getDescription());
 		comic.setAuthors(comicDetail.getAuthors());
 		comic.setCategories(comicDetail.getCategories());
-		comic.setTags(comicDetail.getTags());
 		comic.setChapters(comic.getChapters());
-		comic.setStatus(comicDetail.getStatus());
+//		comic.setStatus(comicDetail.getStatus());
 		return ResponseUtil.returnComic(comic).toString();
 	}
 

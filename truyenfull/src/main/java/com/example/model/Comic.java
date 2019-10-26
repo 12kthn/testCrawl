@@ -1,9 +1,11 @@
 package com.example.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
@@ -23,7 +25,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.example.model.Tag;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @SuppressWarnings("serial")
@@ -39,9 +40,8 @@ public class Comic implements Serializable{
 	
 	private String title;
 	
+	@Column(length = 65535, columnDefinition = "text")
 	private String description;
-	
-	private Byte status;
 	
 	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(name = "comics_categories",
@@ -50,19 +50,15 @@ public class Comic implements Serializable{
 	private List<Category> categories;
 	
 	@ManyToMany(fetch = FetchType.LAZY)
-	@JoinTable(name = "comics_tags",
-			joinColumns = {@JoinColumn(name = "comic_id")},
-			inverseJoinColumns = { @JoinColumn(name = "tag_id") })
-	private List<Tag> tags;
-	
-	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(name = "comics_authors",
 			joinColumns = {@JoinColumn(name = "comic_id")},
 			inverseJoinColumns = { @JoinColumn(name = "author_id") })
 	private List<Author> authors;
 	
-	@OneToMany(mappedBy = "comic")
-	private List<Chapter> chapters;
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "comic")
+	private List<Chapter> chapters = new ArrayList<>();
+	
+	private String status;
 	
 	@Column(nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
@@ -98,28 +94,12 @@ public class Comic implements Serializable{
 		this.description = description;
 	}
 
-	public Byte getStatus() {
-		return status;
-	}
-
-	public void setStatus(Byte status) {
-		this.status = status;
-	}
-
 	public List<Category> getCategories() {
 		return categories;
 	}
 
 	public void setCategories(List<Category> categories) {
 		this.categories = categories;
-	}
-
-	public List<Tag> getTags() {
-		return tags;
-	}
-
-	public void setTags(List<Tag> tags) {
-		this.tags = tags;
 	}
 
 	public List<Author> getAuthors() {
@@ -154,5 +134,16 @@ public class Comic implements Serializable{
 		this.chapters = chapters;
 	}
 
-	
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public void addChapter(Chapter chapter) {
+		chapters.add(chapter);
+		chapter.setComic(this);
+	}
 }
