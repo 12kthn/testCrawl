@@ -1,5 +1,6 @@
 package com.example.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -19,10 +20,18 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@SuppressWarnings("serial")
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "chapters")
 @EntityListeners(AuditingEntityListener.class)
-public class Chapter {
+public class Chapter implements Serializable{
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,7 +39,7 @@ public class Chapter {
 	
 	private String title;
 	
-	@Column(length = 65535, columnDefinition = "text")
+	@Column(columnDefinition = "LONGTEXT")
 	private String content;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -46,54 +55,5 @@ public class Chapter {
     @Temporal(TemporalType.TIMESTAMP)
     @LastModifiedDate
     private Date updateAt;
-	
-	public Long getId() {
-		return id;
-	}
 
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public String getContent() {
-		return content;
-	}
-
-	public void setContent(String content) {
-		this.content = content;
-	}
-
-	public Comic getComic() {
-		return comic;
-	}
-
-	public void setComic(Comic comic) {
-		this.comic = comic;
-	}
-
-	public Date getCreateAt() {
-		return createAt;
-	}
-
-	public void setCreateAt(Date createAt) {
-		this.createAt = createAt;
-	}
-
-	public Date getUpdateAt() {
-		return updateAt;
-	}
-
-	public void setUpdateAt(Date updateAt) {
-		this.updateAt = updateAt;
-	}
-	
-	
 }

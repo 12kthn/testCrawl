@@ -7,7 +7,6 @@ import com.example.model.Author;
 import com.example.model.Category;
 import com.example.model.Chapter;
 import com.example.model.Comic;
-import com.example.model.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -15,34 +14,18 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public class ResponseUtil {
 	private static ObjectMapper mapper = new ObjectMapper();
 	
-	public static ObjectNode returnUser(User user) {
-		ObjectNode node = mapper.createObjectNode();
-		node.put("id", user.getId());
-		node.put("userName", user.getUserName());
-		node.put("password", user.getPassword());
-		node.put("role", user.getRole());
-		node.put("createAt", TimeUtil.toString(user.getCreateAt()));
-		node.put("updateAt", TimeUtil.toString(user.getUpdateAt()));
-		return node;
-	}
-	
-	public static ArrayNode returnListUser(List<User> users) {
-		ArrayNode arrayNode = mapper.createArrayNode();
-        for (User user : users) {
-            arrayNode.add(returnUser(user));
-        }
-        return arrayNode;
-	}
-	
 	public static ObjectNode returnAuthor(Author author) {
 		ObjectNode node = mapper.createObjectNode();
 		node.put("id", author.getId());
 		node.put("fullName", author.getFullName());
-		List<String> comicTitles = new ArrayList<>();
-		for (Comic comic : author.getComics()) {
-			comicTitles.add(comic.getTitle());
+		if (author.getComics() != null) {
+			List<String> comicTitles = new ArrayList<>();
+			for (Comic comic : author.getComics()) {
+				comicTitles.add(comic.getTitle());
+			}
+			node.put("comis", comicTitles.toString());
 		}
-		node.put("comis", comicTitles.toString());
+		
 		node.put("createAt", TimeUtil.toString(author.getCreateAt()));
 		node.put("updateAt", TimeUtil.toString(author.getUpdateAt()));
 		return node;
@@ -121,11 +104,13 @@ public class ResponseUtil {
         }
         
         if (comic.getChapters() != null) {
-	        List<String> chapterTitles = new ArrayList<>();
+    		ArrayNode arrayChapter = mapper.createArrayNode();
 	        for (Chapter chapter: comic.getChapters()) {
-	        	chapterTitles.add(chapter.getTitle());
+	        	ObjectNode chapterNode = mapper.createObjectNode();
+	    		chapterNode.put("title", chapter.getTitle());
+	    		arrayChapter.add(chapterNode);
 	        }
-	        node.put("chapters", chapterTitles.toString());
+	        node.set("chapters", arrayChapter);
         }
         
         node.put("createAt", TimeUtil.toString(comic.getCreateAt()));

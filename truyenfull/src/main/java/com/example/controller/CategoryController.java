@@ -2,10 +2,6 @@ package com.example.controller;
 
 import javax.validation.Valid;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,38 +30,6 @@ public class CategoryController {
     public String getAll() {
     	return ResponseUtil.returnListCategory(categoryRepository.findAll()).toString();
     }
-    
-    @GetMapping(value = "/crawler")
-    public boolean crawler() {
-    	try {
-			Document document = Jsoup.connect("https://truyenfull.vn/").get();
-			System.out.println("Title: " + document.title());
-			Elements categories = document.select("div.dropdown-menu > div.row > div.col-md-4 > ul > li > a");
-			for (Element category : categories) {
-				System.out.println("Category name: " + category.text());
-				System.out.println("Link: " + category.attr("href"));
-			}
-		} catch (Exception e) {
-			return false;
-		}
-    	return true;
-    }
-    
-//    @PostMapping(value = "/crawler/insertAll", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-//    public String crawlerInsertALL() {
-//    	try {
-//			Document document = Jsoup.connect("https://truyenfull.vn/").get();
-//			Elements categories = document.select("div.dropdown-menu > div.row > div.col-md-4 > ul > li > a");
-//			for (Element element : categories) {
-//				System.out.println(element.text());
-//				Category category = new Category(element.text());
-//				categoryRepository.save(category);
-//			}
-//		} catch (Exception e) {
-//			return "";
-//		}
-//    	return ResponseUtil.returnListCategory(categoryRepository.findAll()).toString();
-//    }
     
     // Get a Single category
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)

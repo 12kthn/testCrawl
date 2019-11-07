@@ -21,7 +21,14 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @SuppressWarnings("serial")
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "authors")
 @EntityListeners(AuditingEntityListener.class)
@@ -47,51 +54,8 @@ public class Author implements Serializable {
     @LastModifiedDate
     private Date updateAt;
 
-	public Author() {
-	}
-
 	public Author(String fullName) {
 		this.fullName = fullName;
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public String getFullName() {
-		return fullName;
-	}
-
-	public void setFullName(String fullName) {
-		this.fullName = fullName;
-	}
-
-	public Date getCreateAt() {
-		return createAt;
-	}
-
-	public void setCreateAt(Date createAt) {
-		this.createAt = createAt;
-	}
-
-	public Date getUpdateAt() {
-		return updateAt;
-	}
-
-	public void setUpdateAt(Date updateAt) {
-		this.updateAt = updateAt;
-	}
-
-	public List<Comic> getComics() {
-		return comics;
-	}
-
-	public void setComics(List<Comic> comics) {
-		this.comics = comics;
 	}
     
 }

@@ -7,4 +7,6 @@ import com.example.model.Comic;
 @Repository
 public interface ComicRepository extends JpaRepository<Comic, Long>{
 
+	Comic findByTitle(String title);
+	
 }

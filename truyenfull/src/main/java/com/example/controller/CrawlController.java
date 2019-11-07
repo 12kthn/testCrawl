@@ -2,7 +2,6 @@ package com.example.controller;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.jsoup.Jsoup;
@@ -10,7 +9,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,62 +23,100 @@ import com.example.model.Comic;
 import com.example.repository.AuthorRepository;
 import com.example.repository.CategoryRepository;
 import com.example.repository.ComicRepository;
+import com.example.selector.impl.TruyenFullCategorySelector;
+import com.example.selector.impl.TruyenFullChapterSelector;
+import com.example.selector.impl.TruyenFullStorySelector;
 import com.example.utils.ResponseUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @RestController
 @RequestMapping("/api/crawler")
 public class CrawlController {
-	
+
 	@Autowired
 	ComicRepository comicRepository;
-	
+
 	@Autowired
 	AuthorRepository authorRepository;
-	
+
 	@Autowired
 	CategoryRepository categoryRepository;
 	
+
+	//insert truyenfull category
+	@PostMapping(value = "/insertAllCategories", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public String crawlerInsertALL() {
+		TruyenFullCategorySelector categorySelector = TruyenFullCategorySelector.getInstance();
+		List<Category> categories = new ArrayList<>();
+		try {
+			Document document = Jsoup.connect("https://truyenfull.vn/").get();
+			Elements categoryLinks = document.select(categorySelector.name());
+			for (Element element : categoryLinks) {
+				Category category = new Category(element.text());
+				categories.add(category);
+			}
+		} catch (Exception e) {
+			return "";
+		}
+		categoryRepository.saveAll(categories);
+		return ResponseUtil.returnListCategory(categoryRepository.findAll()).toString();
+	}
+
+	// Insert comic
 	@PostMapping(value = "/comic", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public String insertData(@RequestParam("url") String url) {
 		Comic comic = new Comic();
 		try {
 			Document document = Jsoup.connect(url).get();
-			List<String> allChapterLinks = getAllListChapterLinks(document, getAllPaginationLinks(document, url));
-			comic = getObject(comic, document, allChapterLinks);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return "";
-		}
-		return comicRepository.save(comic).toString();
-	}
-	
-	//check data
-	@GetMapping(value = "/comic", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public String getData(@RequestParam("url") String url) {
-		Comic comic = new Comic();
-		try {
-			Document document = Jsoup.connect(url).get();
-			List<String> allChapterLinks = getAllListChapterLinks(document, getAllPaginationLinks(document, url));
-			comic = getObject(comic, document, allChapterLinks);
+			comic = getComic(comic, document, url);
+			comicRepository.save(comic).toString();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return "";
 		}
 		return ResponseUtil.returnComic(comic).toString();
 	}
+
+	@GetMapping
+    public boolean crawlCommic() throws IOException {
+        for (int i = 1; i < 5; i++) {
+            System.out.println("Page: " + i);
+            Document document = Jsoup.connect("https://truyenfull.vn/danh-sach/truyen-hot/trang-" + i + "/").get();
+            Elements elements = document.select("#list-page > div.col-xs-12.col-sm-12.col-md-9.col-truyen-main > div.list.list-truyen.col-xs-12 > div.row");
+            for (Element element : elements) {
+                System.out.println("Tên truyện: " + element.select("h3.truyen-title > a").text());
+                System.out.println(element.select("h3.truyen-title > a").attr("href"));
+            }
+        }
+
+        return true;
+    }
 	
-	private Comic getObject(Comic comic, Document document, List<String> allChapterLinks) {
+	// check comic data
+	@GetMapping(value = "/comic", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public String getData(@RequestParam("url") String url) {
+		Comic comic = new Comic();
+		try {
+			Document document = Jsoup.connect(url).get();
+			comic = getComic(comic, document, url);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "";
+		}
+		return ResponseUtil.returnComic(comic).toString();
+	}
+
+	
+	
+	private Comic getComic(Comic comic, Document document, String comicUrl) {
+		TruyenFullStorySelector comicSelector = TruyenFullStorySelector.getInstance();
 		
-		Element inforDiv = document.getElementsByClass("col-info-desc").get(0);
+		List<String> allChapterLinks = getAllListChapterLinks(document, comicUrl);
 
-		comic.setTitle(inforDiv.getElementsByClass("title").get(0).text());
-		comic.setDescription(inforDiv.getElementsByClass("desc-text").get(0).text());
+		comic.setTitle(document.selectFirst(comicSelector.title()).text());
+		comic.setDescription(document.selectFirst(comicSelector.description()).text());
 
-		Elements authorLinks = inforDiv.select("div.info > div").get(0).getElementsByTag("a");
-		List<Author> authors = new ArrayList<>(); 
+		Elements authorLinks = document.select(comicSelector.author());
+		List<Author> authors = new ArrayList<>();
 		for (Element link : authorLinks) {
 			Author author = authorRepository.findByFullName(link.text());
 			if (author == null) {
@@ -90,7 +126,7 @@ public class CrawlController {
 		}
 		comic.setAuthors(authors);
 
-		Elements categorieLinks = inforDiv.select("div.info > div").get(1).getElementsByTag("a");
+		Elements categorieLinks = document.select(comicSelector.categorieLinks());
 		List<Category> categories = new ArrayList<>();
 		for (Element link : categorieLinks) {
 			Category category = categoryRepository.findByName(link.text());
@@ -98,31 +134,37 @@ public class CrawlController {
 		}
 		comic.setCategories(categories);
 
-		comic.setStatus(inforDiv.select("div.info > div").get(3).getElementsByClass("text-primary").text());
-		
+		comic.setStatus(document.selectFirst(comicSelector.status()).text());
+
 		for (String chapterUrl : allChapterLinks) {
-			Chapter chapter = new Chapter();
-			try {
-				document = Jsoup.connect(chapterUrl).get();
-				chapter.setTitle(document.select("a.chapter-title").get(0).text());
-				chapter.setContent(document.getElementById("chapter-c").text());
-				comic.addChapter(chapter);
-			} catch (IOException e) {
-				e.printStackTrace();
-				chapter = null;
-			}
-			
+			comic.addChapter(getChapterData(document, chapterUrl));
 		}
-		
+
 		return comic;
 	}
 	
-	private List<String> getAllListChapterLinks(Document document, List<String> paginationlinks){
+	private Chapter getChapterData(Document document, String chapterUrl) {
+		TruyenFullChapterSelector chapterSelector = TruyenFullChapterSelector.getInstance();
+		Chapter chapter = new Chapter();
+		try {
+			document = Jsoup.connect(chapterUrl).get();
+			chapter.setTitle(document.selectFirst(chapterSelector.title()).text());
+			chapter.setContent(document.selectFirst(chapterSelector.content()).text());
+		} catch (IOException e) {
+			e.printStackTrace();
+			chapter = null;
+		}
+		return chapter;
+	}
+
+	private List<String> getAllListChapterLinks(Document document, String comicUrl) {
+		TruyenFullStorySelector comicSelector = TruyenFullStorySelector.getInstance();
+		List<String> paginationlinks = getAllPaginationLinks(document, comicUrl);
 		List<String> allChapterLinks = new ArrayList<>();
 		try {
-			for(String paginationlink : paginationlinks) {
+			for (String paginationlink : paginationlinks) {
 				document = Jsoup.connect(paginationlink).get();
-				Elements chapterLinks = document.select("ul.list-chapter > li > a");
+				Elements chapterLinks = document.select(comicSelector.chapterLinks());
 				for (Element link : chapterLinks) {
 					allChapterLinks.add(link.attr("href"));
 				}
@@ -133,13 +175,14 @@ public class CrawlController {
 		}
 		return allChapterLinks;
 	}
-	
-	private List<String> getAllPaginationLinks(Document document, String url){
+
+	private List<String> getAllPaginationLinks(Document document, String comicUrl) {
+		TruyenFullStorySelector comicSelector = TruyenFullStorySelector.getInstance();
 		List<String> list = new ArrayList<>();
 		String paginationLink;
-		int totalPage = Integer.valueOf(document.getElementById("total-page").val());
+		int totalPage = Integer.valueOf(document.select(comicSelector.totalPage()).val());
 		for (int i = 0; i < totalPage; i++) {
-			paginationLink = url + "trang-" + (i+1) + "/#list-chapter";
+			paginationLink = comicUrl + "trang-" + (i + 1) + "/#list-chapter";
 			list.add(paginationLink);
 		}
 		return list;

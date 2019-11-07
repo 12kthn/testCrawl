@@ -27,7 +27,14 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @SuppressWarnings("serial")
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "comics")
 @EntityListeners(AuditingEntityListener.class)
@@ -40,7 +47,7 @@ public class Comic implements Serializable{
 	
 	private String title;
 	
-	@Column(length = 65535, columnDefinition = "text")
+	@Column(columnDefinition = "text")
 	private String description;
 	
 	@ManyToMany(fetch = FetchType.LAZY)
@@ -55,7 +62,7 @@ public class Comic implements Serializable{
 			inverseJoinColumns = { @JoinColumn(name = "author_id") })
 	private List<Author> authors;
 	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "comic")
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "comic", orphanRemoval = true)
 	private List<Chapter> chapters = new ArrayList<>();
 	
 	private String status;
@@ -69,80 +76,8 @@ public class Comic implements Serializable{
     @Temporal(TemporalType.TIMESTAMP)
     @LastModifiedDate
     private Date updateAt;
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public List<Category> getCategories() {
-		return categories;
-	}
-
-	public void setCategories(List<Category> categories) {
-		this.categories = categories;
-	}
-
-	public List<Author> getAuthors() {
-		return authors;
-	}
-
-	public void setAuthors(List<Author> authors) {
-		this.authors = authors;
-	}
-
-	public Date getCreateAt() {
-		return createAt;
-	}
-
-	public void setCreateAt(Date createAt) {
-		this.createAt = createAt;
-	}
-
-	public Date getUpdateAt() {
-		return updateAt;
-	}
-
-	public void setUpdateAt(Date updateAt) {
-		this.updateAt = updateAt;
-	}
-
-	public List<Chapter> getChapters() {
-		return chapters;
-	}
-
-	public void setChapters(List<Chapter> chapters) {
-		this.chapters = chapters;
-	}
-
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
-
-	public void addChapter(Chapter chapter) {
+    
+    public void addChapter(Chapter chapter) {
 		chapters.add(chapter);
 		chapter.setComic(this);
 	}

@@ -22,7 +22,14 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @SuppressWarnings("serial")
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "categories")
 @EntityListeners(AuditingEntityListener.class)
@@ -52,49 +59,4 @@ public class Category implements Serializable {
 		this.name = name;
 	}
 
-	public Category() {
-		super();
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public Date getCreateAt() {
-		return createAt;
-	}
-
-	public void setCreateAt(Date createAt) {
-		this.createAt = createAt;
-	}
-
-	public Date getUpdateAt() {
-		return updateAt;
-	}
-
-	public void setUpdateAt(Date updateAt) {
-		this.updateAt = updateAt;
-	}
-
-	public List<Comic> getComis() {
-		return comis;
-	}
-
-	public void setComis(List<Comic> comis) {
-		this.comis = comis;
-	}
-    
-    
 }
