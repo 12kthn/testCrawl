@@ -1,0 +1,17 @@
+D:\work\program\teso\thrift\crawler\src\main\java\com\truyenfull\crawler\model\Chapter.java
+D:\work\program\teso\thrift\crawler\src\main\java\com\truyenfull\crawler\selector\CategoryContentBaseSelector.java
+D:\work\program\teso\thrift\crawler\src\main\java\com\truyenfull\crawler\selector\StoryContentBaseSelector.java
+D:\work\program\teso\thrift\crawler\src\main\java\com\truyenfull\crawler\repository\AuthorRepository.java
+D:\work\program\teso\thrift\crawler\src\main\java\com\truyenfull\crawler\model\Author.java
+D:\work\program\teso\thrift\crawler\src\main\java\com\truyenfull\crawler\selector\impl\TruyenFullStorySelector.java
+D:\work\program\teso\thrift\crawler\src\main\java\com\truyenfull\crawler\selector\impl\TruyenFullCategorySelector.java
+D:\work\program\teso\thrift\crawler\src\main\java\com\truyenfull\crawler\Application.java
+D:\work\program\teso\thrift\crawler\src\main\java\com\truyenfull\crawler\config\ThriftServer.java
+D:\work\program\teso\thrift\crawler\src\main\java\com\truyenfull\crawler\selector\impl\TruyenFullChapterSelector.java
+D:\work\program\teso\thrift\crawler\src\main\java\com\truyenfull\crawler\model\Category.java
+D:\work\program\teso\thrift\crawler\src\main\java\com\truyenfull\crawler\repository\ComicRepository.java
+D:\work\program\teso\thrift\crawler\src\main\java\com\truyenfull\crawler\repository\CategoryRepository.java
+D:\work\program\teso\thrift\crawler\src\main\java\com\truyenfull\crawler\repository\ChapterRepository.java
+D:\work\program\teso\thrift\crawler\src\main\java\com\truyenfull\crawler\service\CrawlerService.java
+D:\work\program\teso\thrift\crawler\src\main\java\com\truyenfull\crawler\selector\ChapterContentBaseSelector.java
+D:\work\program\teso\thrift\crawler\src\main\java\com\truyenfull\crawler\model\Comic.java
