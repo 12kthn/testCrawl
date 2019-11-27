@@ -3,10 +3,7 @@ package com.truyenfull.api.controller;
 import com.truyenfull.api.config.QueryClient;
 import com.truyenfull.lib.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(value = "/api")
@@ -28,10 +25,10 @@ public class QueryController {
 	}
 
 	@GetMapping(value = "/the-loai/{categoryUrlName}", produces = "application/json")
-	public String getComicsByCategory(@PathVariable String categoryUrlName) {
+	public String getComicsByCategory(@PathVariable String categoryUrlName, @RequestBody PageInfo pageInfo) {
 		String response;
 		try {
-			PageInfo pageInfo = new PageInfo(1,10);
+			pageInfo.setPage(1);
 			response = client.findComicByCategory(categoryUrlName, pageInfo);
 		} catch (Exception e) {
 			response = e.getMessage();
@@ -41,10 +38,10 @@ public class QueryController {
 	}
 
 	@GetMapping(value = "/the-loai/{categoryUrlName}/trang-{page}", produces = "application/json")
-	public String getComicsByCategory(@PathVariable String categoryUrlName, @PathVariable int page) {
+	public String getComicsByCategory(@PathVariable String categoryUrlName, @PathVariable int page, @RequestBody PageInfo pageInfo) {
 		String response;
 		try {
-			PageInfo pageInfo = new PageInfo(page,10);
+			pageInfo.setPage(page);
 			response = client.findComicByCategory(categoryUrlName, pageInfo);
 		} catch (Exception e) {
 			response = e.getMessage();
@@ -66,11 +63,37 @@ public class QueryController {
 	}
 
 	@GetMapping(value = "/{comicUrlName}/trang-{page}", produces = "application/json")
-	public String getComicChapters(@PathVariable String comicUrlName, @PathVariable int page) {
+	public String getComicChapters(@PathVariable String comicUrlName, @PathVariable int page, @RequestBody PageInfo pageInfo) {
 		String response;
 		try {
-			PageInfo pageInfo = new PageInfo(page,10);
+			pageInfo.setPage(page);
 			response = client.getComicChapters(comicUrlName, pageInfo);
+		} catch (Exception e) {
+			response = e.getMessage();
+			e.printStackTrace();
+		}
+		return response;
+	}
+
+	@GetMapping(value = "/danh-sach/{key}", produces = "application/json")
+	public String getChaptersByKey(@PathVariable String key, @RequestBody PageInfo pageInfo) {
+		String response;
+		pageInfo.setPage(1);
+		try {
+			response = client.findComic(key, pageInfo);
+		} catch (Exception e) {
+			response = e.getMessage();
+			e.printStackTrace();
+		}
+		return response;
+	}
+
+	@GetMapping(value = "/danh-sach/{key}/trang-{page}", produces = "application/json")
+	public String getChaptersByKey(@PathVariable String key, @PathVariable int page, @RequestBody PageInfo pageInfo) {
+		String response;
+		try {
+			pageInfo.setPage(page);
+			response = client.findComic(key, pageInfo);
 		} catch (Exception e) {
 			response = e.getMessage();
 			e.printStackTrace();

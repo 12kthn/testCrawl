@@ -12,7 +12,7 @@ import java.util.List;
 @Repository
 public interface ChapterRepository extends JpaRepository<Chapter, Long>{
 
-    @Query(value = "select c from Chapter c where c.id in (select max(c.id) from c where c.comic = ?1)", nativeQuery = false)
+    @Query(value = "select c from Chapter c where c.id in (select max(c.id) from c where c.comic = ?1)")
     Chapter findLastChapterOfComic(Comic comic);
 
     List<Chapter> findByComic(Comic comic, Pageable pageable);

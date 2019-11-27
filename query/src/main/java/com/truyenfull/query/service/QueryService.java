@@ -12,6 +12,7 @@ import com.truyenfull.query.utils.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,19 +30,29 @@ public class QueryService implements IQueryService.Iface {
     ChapterRepository chapterRepository;
 
     @Override
-    public String getAllCategories(){
-        return ResponseUtil.returnListCategory(categoryRepository.findAll()).toString();
+    public String getAllCategories() {
+        try {
+            List<Category> categories = categoryRepository.findAll();
+            if (categories != null) {
+                return ResponseUtil.success(ResponseUtil.returnListCategory(categories));
+            } else {
+                return ResponseUtil.notFound("Không tìm thấy danh sách thể loại");
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
-    public String getOneComic(String urlName){
+    public String getOneComic(String urlName) {
         Comic comic = comicRepository.findByUrlName(urlName);
         try {
             if (comic != null) {
                 comic.setViews(comic.getViews() + 1);
-                return ResponseUtil.returnComic(comic).toString();
+                return ResponseUtil.success(ResponseUtil.returnComic(comic));
             } else {
-                throw new Exception("Khong tim thay truyen");
+                return ResponseUtil.notFound("Không tìm thấy truyện");
             }
         } catch (Exception e) {
             return e.getMessage();
@@ -60,11 +71,11 @@ public class QueryService implements IQueryService.Iface {
             if (comic != null) {
                 List<Chapter> chapters = chapterRepository.findByComic(comic, pageable);
                 if (chapters.isEmpty()) {
-                    throw new Exception("Khong tim thay danh sach chapter");
+                    return ResponseUtil.notFound("Không tìm thấy danh sách chapter");
                 }
-                return ResponseUtil.returnListChaptersByComic(chapters).toString();
+                return ResponseUtil.success(ResponseUtil.returnListChaptersByComic(chapters));
             } else {
-                throw new Exception("Khong tim thay truyen");
+                return ResponseUtil.notFound("Không tìm thấy truyện");
             }
         } catch (Exception e) {
             return e.getMessage();
@@ -72,18 +83,78 @@ public class QueryService implements IQueryService.Iface {
     }
 
     @Override
-    public String findComicByCategory(String categoryUrlName, PageInfo pageInfo){
-        Pageable pageable = PageRequest.of(pageInfo.getPage() - 1, pageInfo.maxPageItems);
+    public String findComicByCategory(String categoryUrlName, PageInfo pageInfo) {
+        Pageable pageable = PageRequest.of(pageInfo.getPage() - 1, pageInfo.maxPageItems,
+                Sort.by("updateAt").descending());
         try {
             Category category = categoryRepository.findByUrlName(categoryUrlName);
             List<Comic> comics = comicRepository.findAllByCategories(category, pageable);
             if (comics.isEmpty()) {
-                throw new Exception("Khong tim thay truyen");
+                ResponseUtil.notFound("Khong tim thay truyen");
             }
-            return ResponseUtil.returnListComicByCategory(comics).toString();
+            return ResponseUtil.success(ResponseUtil.returnListComicByCategory(comics));
         } catch (Exception e) {
             return e.getMessage();
         }
+    }
+
+    @Override
+    public String findComic(String key, PageInfo pageInfo){
+        List<Comic> comics;
+        switch (key) {
+            case "truyen-moi":
+                comics = findNewComic(pageInfo);
+                break;
+            case "truyen-hot":
+                comics = findHotComic(pageInfo);
+                break;
+            case "truyen-full":
+                comics = findComicByStatus("Full", pageInfo);
+                break;
+            case "tien-hiep-hay":
+                comics = findHotComicByCategory("tien-hiep", pageInfo);
+                break;
+            case "kiem-hiep-hay":
+                comics = findHotComicByCategory("kiem-hiep", pageInfo);
+                break;
+            case "truyen-teen-hay":
+                comics = findHotComicByCategory("truyen-teen", pageInfo);
+                break;
+            case "ngon-tinh-hay":
+                comics = findHotComicByCategory("ngon-tinh", pageInfo);
+                break;
+            case "dam-my-hay":
+                comics = findHotComicByCategory("dam-my", pageInfo);
+                break;
+            default:
+                return ResponseUtil.notFound("URL not found");
+        }
+        return ResponseUtil.success(ResponseUtil.returnListComicByCategory(comics));
+    }
+
+    private List<Comic> findNewComic(PageInfo pageInfo){
+        Pageable pageable = PageRequest.of(pageInfo.getPage() - 1, pageInfo.maxPageItems,
+                Sort.by("updateAt").descending());
+        return comicRepository.findAll(pageable).getContent();
+    }
+
+    private List<Comic> findComicByStatus(String status, PageInfo pageInfo){
+        Pageable pageable = PageRequest.of(pageInfo.getPage() - 1, pageInfo.maxPageItems,
+                Sort.by("updateAt").descending());
+        return comicRepository.findByStatus(status, pageable);
+    }
+
+    private List<Comic> findHotComic(PageInfo pageInfo){
+        Pageable pageable = PageRequest.of(pageInfo.getPage() - 1, pageInfo.maxPageItems,
+                Sort.by("views").descending().and(Sort.by("updateAt").descending()));
+        return comicRepository.findAll(pageable).getContent();
+    }
+
+    private List<Comic> findHotComicByCategory(String categoryUrlName, PageInfo pageInfo){
+        Category category = categoryRepository.findByUrlName(categoryUrlName);
+        Pageable pageable = PageRequest.of(pageInfo.getPage() - 1, pageInfo.maxPageItems,
+                Sort.by("views").descending().and(Sort.by("updateAt").descending()));
+        return comicRepository.findAllByCategories(category, pageable);
     }
 
 }

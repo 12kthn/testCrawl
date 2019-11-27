@@ -62,7 +62,7 @@ public class CrawlerService implements ICrawlerService.Iface {
     public String crawlByCategory(String categoryUrlName) {
         String url = "https://truyenfull.vn/the-loai/" + categoryUrlName + "/";
 //        List<Comic> comics = new ArrayList<Comic>();
-        for (int i = 1; i < 2; i++) {
+        for (int i = 1; i < 3; i++) {
             System.out.println("Page: " + i);
             try {
                 Document document = Jsoup.connect(url + "trang-" + i + "/").get();

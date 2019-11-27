@@ -14,6 +14,8 @@ public interface ComicRepository extends JpaRepository<Comic, Long>{
 
 	List<Comic> findAllByCategories(Category category, Pageable pageable);
 
+	List<Comic> findByStatus(String status, Pageable pageable);
+
 	Comic findByUrlName(String urlName);
-	
+
 }
