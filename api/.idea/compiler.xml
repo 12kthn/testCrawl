@@ -6,13 +6,18 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="truyenfull.crawler" />
         <module name="api" />
+        <module name="truyenfull.lib" />
+        <module name="truyenfull.query" />
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="api" options="-parameters" />
+      <module name="truyenfull.crawler" options="-parameters" />
+      <module name="truyenfull.query" options="-parameters" />
     </option>
   </component>
 </project>

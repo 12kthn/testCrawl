@@ -43,11 +43,6 @@ public class Category implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @LastModifiedDate
     private Date updateAt;
-    
-	public Category(String name, String urlName) {
-		this.name = name;
-		this.urlName = urlName;
-	}
 
     @Override
     public String toString() {

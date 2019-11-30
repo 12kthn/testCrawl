@@ -33,13 +33,14 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
     <property name="extract.method.default.visibility" value="private" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../lib/src/main/java/com/truyenfull/lib" />
+    <property name="last_opened_file_path" value="$USER_HOME$/OneDrive/Documents/github/redis_demo" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.15136719" />
     <property name="project.structure.side.proportion" value="0.2" />
   </component>
   <component name="RecentsManager">
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.truyenfull.query.config" />
       <recent name="com.truyenfull.query.model" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
@@ -111,12 +112,7 @@
       <serviceView>
         <option name="contentProportion" value="0.18976109" />
         <treeState>
-          <expand>
-            <path>
-              <item name="services root" type="e789fda9:ObjectUtils$Sentinel" />
-              <item name="com.intellij.execution.services.ServiceModel$ServiceGroupNode@67f7b516" type="7427dc5b:ServiceModel$ServiceGroupNode" />
-            </path>
-          </expand>
+          <expand />
           <select />
         </treeState>
       </serviceView>
@@ -140,6 +136,8 @@
       <workItem from="1574423859394" duration="5880000" />
       <workItem from="1574668921801" duration="12142000" />
       <workItem from="1574699359738" duration="2846000" />
+      <workItem from="1574857963962" duration="1181000" />
+      <workItem from="1575028468401" duration="4318000" />
     </task>
     <servers />
   </component>

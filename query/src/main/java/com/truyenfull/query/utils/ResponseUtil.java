@@ -2,6 +2,7 @@ package com.truyenfull.query.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ContainerNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.truyenfull.query.constant.StatusCode;
 import com.truyenfull.query.model.Author;
@@ -14,17 +15,9 @@ import java.util.List;
 
 public class ResponseUtil {
 
-    private static ObjectMapper mapper = new ObjectMapper();
+    private static ObjectMapper mapper = ObjectMapperSingleton.getInstance();
 
-    public static String success(ObjectNode body){
-        ObjectNode node = mapper.createObjectNode();
-        node.put(StatusCode.class.getSimpleName(), StatusCode.SUCCESS.getValue());
-        node.put("Message", StatusCode.SUCCESS.name());
-        node.set("Response", body);
-        return node.toString();
-    }
-
-    public static String success(ArrayNode body){
+    public static String success(ContainerNode body){
         ObjectNode node = mapper.createObjectNode();
         node.put(StatusCode.class.getSimpleName(), StatusCode.SUCCESS.getValue());
         node.put("Message", StatusCode.SUCCESS.name());
@@ -38,20 +31,6 @@ public class ResponseUtil {
         node.put("Error", StatusCode.NOT_FOUND.name());
         node.put("Response", body);
         return node.toString();
-    }
-
-    public static ObjectNode returnCategory(Category category) {
-        ObjectNode node = mapper.createObjectNode();
-        node.put("id", category.getId());
-        node.put("name", category.getName());
-        if (category.getComics() != null) {
-            List<String> comicTitles = new ArrayList<>();
-            for (Comic comic: category.getComics()) {
-                comicTitles.add(comic.getTitle());
-            }
-            node.put("comics", comicTitles.toString());
-        }
-        return node;
     }
 
     public static ArrayNode returnListCategory(List<Category> categories) {
@@ -73,6 +52,7 @@ public class ResponseUtil {
         node.put("status", comic.getStatus());
         node.put("rating", comic.getRating());
         node.put("views", comic.getViews());
+        node.put("urlName", comic.getUrlName());
 
         setCategoriesFieldForComic(comic, node);
         setAuthorsFieldForComic(comic, node);
@@ -102,13 +82,24 @@ public class ResponseUtil {
         return arrayNode;
     }
 
-    public static ArrayNode returnListChaptersByComic(List<Chapter> chapters) {
+    public static ObjectNode returnChapterTitleAndContent(Chapter chapter) {
+        ObjectNode node = mapper.createObjectNode();
+        node.put("title", chapter.getTitle());
+        node.put("content", chapter.getContent());
+        return node;
+    }
+
+    public static ObjectNode returnChapterTitleAndUrlName(Chapter chapter) {
+        ObjectNode node = mapper.createObjectNode();
+        node.put("title", chapter.getTitle());
+        node.put("urlName", chapter.getUrlName());
+        return node;
+    }
+
+    public static ArrayNode returnListChapters(List<Chapter> chapters) {
         ArrayNode arrayNode = mapper.createArrayNode();
         for (Chapter chapter: chapters) {
-            ObjectNode node = mapper.createObjectNode();
-            node.put("title", chapter.getTitle());
-            node.put("urlName", chapter.getUrlName());
-            arrayNode.add(node);
+            arrayNode.add(returnChapterTitleAndUrlName(chapter));
         }
         return arrayNode;
     }
@@ -118,7 +109,7 @@ public class ResponseUtil {
             ArrayNode arrayAuthor = mapper.createArrayNode();
             for (Author author: comic.getAuthors()) {
                 ObjectNode categoryNode = mapper.createObjectNode();
-                categoryNode.put("full-name", author.getFullName());
+                categoryNode.put("fullName", author.getFullName());
                 arrayAuthor.add(categoryNode);
             }
             node.set("authors", arrayAuthor);
@@ -137,9 +128,13 @@ public class ResponseUtil {
         }
     }
 
+    //Lay 50 chapter đầu
     private static void setChaptersFieldForComic(Comic comic, ObjectNode node) {
-        if (comic.getChapters() != null) {
-            node.set("chapters", returnListChaptersByComic(comic.getChapters().subList(0, 10)));
+        List<Chapter> chapters = comic.getChapters();
+        if (chapters.size() > 0 && chapters.size() < 50){
+            node.set("chapters", returnListChapters(chapters));
+        } else {
+            node.set("chapters", returnListChapters(comic.getChapters().subList(0, 50)));
         }
     }
 

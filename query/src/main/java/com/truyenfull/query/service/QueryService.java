@@ -1,5 +1,6 @@
 package com.truyenfull.query.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.truyenfull.lib.IQueryService;
 import com.truyenfull.lib.PageInfo;
 import com.truyenfull.query.model.Category;
@@ -8,6 +9,8 @@ import com.truyenfull.query.model.Comic;
 import com.truyenfull.query.repository.CategoryRepository;
 import com.truyenfull.query.repository.ChapterRepository;
 import com.truyenfull.query.repository.ComicRepository;
+import com.truyenfull.query.repository.RedisRepository;
+import com.truyenfull.query.utils.ObjectMapperSingleton;
 import com.truyenfull.query.utils.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -29,6 +32,12 @@ public class QueryService implements IQueryService.Iface {
     @Autowired
     ChapterRepository chapterRepository;
 
+    @Autowired
+    RedisRepository redisRepository;
+
+    private String KEY = "TopHotComic";
+    private ObjectMapper mapper = ObjectMapperSingleton.getInstance();
+
     @Override
     public String getAllCategories() {
         try {
@@ -38,47 +47,103 @@ public class QueryService implements IQueryService.Iface {
             } else {
                 return ResponseUtil.notFound("Không tìm thấy danh sách thể loại");
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return e.getMessage();
         }
     }
 
     @Override
     public String getOneComic(String urlName) {
-        Comic comic = comicRepository.findByUrlName(urlName);
+        Comic comic = null;
         try {
-            if (comic != null) {
+            if (redisRepository.hasComic(KEY, urlName)) {
+                System.out.println("comic is in redis");
+                //convert chuỗi Json sang Object Comic
+                comic = mapper.readValue(redisRepository.findOneComic(KEY, urlName), Comic.class);
+
                 comic.setViews(comic.getViews() + 1);
+                redisRepository.updateComic(KEY, comic);
+            } else {
+                System.out.println("comic isn't in redis");
+                comic = comicRepository.findByUrlName(urlName);
+                comic.setViews(comic.getViews() + 1);
+            }
+
+            if (comic != null) {
                 return ResponseUtil.success(ResponseUtil.returnComic(comic));
             } else {
                 return ResponseUtil.notFound("Không tìm thấy truyện");
             }
+        } catch (NullPointerException e) {
+            return ResponseUtil.notFound("Không tìm thấy truyện");
         } catch (Exception e) {
+            e.printStackTrace();
             return e.getMessage();
         } finally {
-            if (comic != null) {
-                comicRepository.save(comic);
-            }
+            comicRepository.updateViews(comic.getViews(), comic.getId());
         }
     }
 
     @Override
-    public String getComicChapters(String comicUrlName, PageInfo pageInfo) {
-        Pageable pageable = PageRequest.of(pageInfo.getPage() - 1, pageInfo.maxPageItems);
+    public String getOneChapter(String comicUrlName, String chapterUrlName) {
+        Chapter chapter;
         try {
-            Comic comic = comicRepository.findByUrlName(comicUrlName);
-            if (comic != null) {
-                List<Chapter> chapters = chapterRepository.findByComic(comic, pageable);
-                if (chapters.isEmpty()) {
-                    return ResponseUtil.notFound("Không tìm thấy danh sách chapter");
-                }
-                return ResponseUtil.success(ResponseUtil.returnListChaptersByComic(chapters));
+            if (redisRepository.hasComic(KEY, comicUrlName)) {
+                System.out.println("Chapters of comic is in redis");
+                //convert chuỗi Json sang Object Chapter
+                chapter = mapper.readValue(redisRepository.findOneChapter(comicUrlName, chapterUrlName), Chapter.class);
             } else {
-                return ResponseUtil.notFound("Không tìm thấy truyện");
+                System.out.println("Chapters of comic is not in redis");
+                chapter = chapterRepository.findByComicAndUrlName(comicUrlName, chapterUrlName);
             }
+        } catch (NullPointerException e) {
+            return ResponseUtil.notFound("Khong tim thay chapter");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return e.getMessage();
+        } finally {
+            Comic comic = comicRepository.findByUrlName(comicUrlName);
+            comic.setViews(comic.getViews() + 1);
+            comicRepository.updateViews(comic.getViews(), comic.getId());
+        }
+
+        if (chapter != null) {
+            return ResponseUtil.success(ResponseUtil.returnChapterTitleAndContent(chapter));
+        } else {
+            return ResponseUtil.notFound("Khong tim thay chapter");
+        }
+
+    }
+
+    @Override
+    public String getComicChapters(String comicUrlName, PageInfo pageInfo) {
+        List<Chapter> chapters;
+        try {
+            if (redisRepository.hasComic(KEY, comicUrlName)) {
+                System.out.println("Chapters of comic is in redis");
+                //convert chuỗi Json sang List<Chapter>
+                chapters = mapper.readValue(
+                        redisRepository.findListChapter(comicUrlName, pageInfo),
+                        mapper.getTypeFactory().constructCollectionType(List.class, Chapter.class));
+            } else {
+                System.out.println("Chapters of comic isn't in redis");
+                Pageable pageable = PageRequest.of(pageInfo.getPage() - 1, pageInfo.maxPageItems);
+                chapters = chapterRepository.findByComic(comicUrlName, pageable);
+            }
+        } catch (NullPointerException e) {
+            return ResponseUtil.notFound("Không tìm thấy danh sách chapter");
         } catch (Exception e) {
             return e.getMessage();
+        } finally {
+            Comic comic = comicRepository.findByUrlName(comicUrlName);
+            comic.setViews(comic.getViews() + 1);
+            comicRepository.updateViews(comic.getViews(), comic.getId());
+        }
+        if (chapters.isEmpty()) {
+            return ResponseUtil.notFound("Không tìm thấy danh sách chapter");
+        } else {
+            return ResponseUtil.success(ResponseUtil.returnListChapters(chapters));
         }
     }
 
@@ -99,7 +164,7 @@ public class QueryService implements IQueryService.Iface {
     }
 
     @Override
-    public String findComic(String key, PageInfo pageInfo){
+    public String findComic(String key, PageInfo pageInfo) {
         List<Comic> comics;
         switch (key) {
             case "truyen-moi":
@@ -132,25 +197,31 @@ public class QueryService implements IQueryService.Iface {
         return ResponseUtil.success(ResponseUtil.returnListComicByCategory(comics));
     }
 
-    private List<Comic> findNewComic(PageInfo pageInfo){
+    @Override
+    public void addTopHotComic(long numberComics){
+        PageInfo pageInfo = new PageInfo(1, (int) numberComics);
+        redisRepository.addListComic(KEY, findHotComic(pageInfo));
+    }
+
+    private List<Comic> findNewComic(PageInfo pageInfo) {
         Pageable pageable = PageRequest.of(pageInfo.getPage() - 1, pageInfo.maxPageItems,
                 Sort.by("updateAt").descending());
         return comicRepository.findAll(pageable).getContent();
     }
 
-    private List<Comic> findComicByStatus(String status, PageInfo pageInfo){
+    private List<Comic> findComicByStatus(String status, PageInfo pageInfo) {
         Pageable pageable = PageRequest.of(pageInfo.getPage() - 1, pageInfo.maxPageItems,
                 Sort.by("updateAt").descending());
         return comicRepository.findByStatus(status, pageable);
     }
 
-    private List<Comic> findHotComic(PageInfo pageInfo){
+    private List<Comic> findHotComic(PageInfo pageInfo) {
         Pageable pageable = PageRequest.of(pageInfo.getPage() - 1, pageInfo.maxPageItems,
                 Sort.by("views").descending().and(Sort.by("updateAt").descending()));
         return comicRepository.findAll(pageable).getContent();
     }
 
-    private List<Comic> findHotComicByCategory(String categoryUrlName, PageInfo pageInfo){
+    private List<Comic> findHotComicByCategory(String categoryUrlName, PageInfo pageInfo) {
         Category category = categoryRepository.findByUrlName(categoryUrlName);
         Pageable pageable = PageRequest.of(pageInfo.getPage() - 1, pageInfo.maxPageItems,
                 Sort.by("views").descending().and(Sort.by("updateAt").descending()));

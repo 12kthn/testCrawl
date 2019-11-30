@@ -15,5 +15,11 @@ public interface ChapterRepository extends JpaRepository<Chapter, Long>{
     @Query(value = "select c from Chapter c where c.id in (select max(c.id) from c where c.comic = ?1)")
     Chapter findLastChapterOfComic(Comic comic);
 
-    List<Chapter> findByComic(Comic comic, Pageable pageable);
+    @Query(value = "select c from Chapter c where c.comic.urlName = ?1 and c.urlName = ?2")
+    Chapter findByComicAndUrlName(String comicUrlName, String chapterUrlName);
+
+    @Query(value = "select c from Chapter c where c.comic.urlName = ?1")
+    List<Chapter> findByComic(String comicUrlName, Pageable pageable);
+
+
 }

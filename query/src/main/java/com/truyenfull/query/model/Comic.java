@@ -58,13 +58,11 @@ public class Comic implements Serializable{
 	private List<Chapter> chapters = new ArrayList<>();
 	
 	private String status;
-	
-	@Column(nullable = false)
+
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate
     private Date createAt;
-    
-    @Column(name = "update_at", nullable = false)
+
     @Temporal(TemporalType.TIMESTAMP)
     @LastModifiedDate
     private Date updateAt;
@@ -72,5 +70,22 @@ public class Comic implements Serializable{
     public void addChapter(Chapter chapter) {
 		chapters.add(chapter);
 		chapter.setComic(this);
+	}
+
+	@Override
+	public String toString() {
+		return 	"id:" + id +
+				", title:'" + title + '\'' +
+				", description:'" + description + '\'' +
+				", urlName:'" + urlName + '\'' +
+				", rating:" + rating +
+				", views:" + views +
+				", categories:" + categories.toString() +
+				", authors:" + authors.toString() +
+				", chapters:" + chapters +
+				", status:'" + status + '\'' +
+				", createAt:" + createAt +
+				", updateAt:" + updateAt +
+				'}';
 	}
 }

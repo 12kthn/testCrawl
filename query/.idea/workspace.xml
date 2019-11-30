@@ -14,12 +14,21 @@
         <option name="mavenHome" value="$PROJECT_DIR$/../../../java/apache-maven-3.6.1" />
       </MavenGeneralSettings>
     </option>
+    <option name="importingSettings">
+      <MavenImportingSettings>
+        <option name="importAutomatically" value="true" />
+        <option name="jdkForImporter" value="1.8" />
+      </MavenImportingSettings>
+    </option>
   </component>
   <component name="ProjectId" id="1TevpmrQn4WYAQ79FOwiI77ehZB" />
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../lib" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../api" />
+    <property name="project.structure.last.edited" value="Modules" />
+    <property name="project.structure.proportion" value="0.0" />
+    <property name="project.structure.side.proportion" value="0.0" />
     <property name="settings.editor.selected.configurable" value="preferences.general" />
   </component>
   <component name="RunDashboard">
@@ -55,6 +64,7 @@
       <updated>1573833560692</updated>
       <workItem from="1573833563167" duration="23000" />
       <workItem from="1573834320977" duration="317000" />
+      <workItem from="1575087000820" duration="51000" />
     </task>
     <servers />
   </component>

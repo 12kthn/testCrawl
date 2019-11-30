@@ -49,4 +49,5 @@ public class Chapter implements Serializable{
 	public String toString() {
 		return "title: " + title;
 	}
+
 }

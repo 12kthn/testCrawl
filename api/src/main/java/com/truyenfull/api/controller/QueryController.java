@@ -37,8 +37,11 @@ public class QueryController {
 		return response;
 	}
 
+
 	@GetMapping(value = "/the-loai/{categoryUrlName}/trang-{page}", produces = "application/json")
-	public String getComicsByCategory(@PathVariable String categoryUrlName, @PathVariable int page, @RequestBody PageInfo pageInfo) {
+	public String getComicsByCategory(@PathVariable String categoryUrlName,
+									  @PathVariable int page,
+									  @RequestBody PageInfo pageInfo) {
 		String response;
 		try {
 			pageInfo.setPage(page);
@@ -63,11 +66,25 @@ public class QueryController {
 	}
 
 	@GetMapping(value = "/{comicUrlName}/trang-{page}", produces = "application/json")
-	public String getComicChapters(@PathVariable String comicUrlName, @PathVariable int page, @RequestBody PageInfo pageInfo) {
+	public String getComicChapters(@PathVariable String comicUrlName,
+								   @PathVariable int page,
+								   @RequestBody PageInfo pageInfo) {
 		String response;
 		try {
 			pageInfo.setPage(page);
 			response = client.getComicChapters(comicUrlName, pageInfo);
+		} catch (Exception e) {
+			response = e.getMessage();
+			e.printStackTrace();
+		}
+		return response;
+	}
+
+	@GetMapping(value = "/{comicUrlName}/{chapterUrlName}", produces = "application/json")
+	public String getOneChapter(@PathVariable String comicUrlName, @PathVariable String chapterUrlName) {
+		String response;
+		try {
+			response = client.getOneChapter(comicUrlName, chapterUrlName);
 		} catch (Exception e) {
 			response = e.getMessage();
 			e.printStackTrace();
@@ -89,7 +106,9 @@ public class QueryController {
 	}
 
 	@GetMapping(value = "/danh-sach/{key}/trang-{page}", produces = "application/json")
-	public String getChaptersByKey(@PathVariable String key, @PathVariable int page, @RequestBody PageInfo pageInfo) {
+	public String getChaptersByKey(@PathVariable String key,
+								   @PathVariable int page,
+								   @RequestBody PageInfo pageInfo) {
 		String response;
 		try {
 			pageInfo.setPage(page);
@@ -101,4 +120,14 @@ public class QueryController {
 		return response;
 	}
 
+	@PostMapping(value = "/addTopHotComic")
+	public String addTopHotComic(@RequestParam("numberComics") long numberComics){
+		try {
+			client.addTopHotComic(numberComics);
+			return "success";
+		} catch (Exception e) {
+			e.printStackTrace();
+			return e.getMessage();
+		}
+	}
 }
